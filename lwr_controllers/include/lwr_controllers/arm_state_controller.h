@@ -11,7 +11,9 @@
 
 #include <boost/scoped_ptr.hpp>
 
-#include <lwr_device.h>
+#include <HAPI/AnyHapticsDevice.h>
+#include <HAPI/GodObjectRenderer.h>
+#include "lwr_device.h"
 
 namespace arm_state_controller
 {
@@ -47,7 +49,7 @@ namespace arm_state_controller
 
         //hapi stuff
 
-        LwrDevice hd;
+        H3D::LwrDevice hd;
         //load surfaces and effects here?
     };
 }

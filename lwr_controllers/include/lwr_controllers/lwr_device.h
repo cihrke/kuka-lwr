@@ -4,9 +4,6 @@
 
 #include <H3D/H3DHapticsDevice.h>
 #include <H3D/MFString.h>
-#include <H3D/SFString.h>
-#include <H3D/SFDouble.h>
-#include <H3D/MFVec3f.h>
 
 namespace H3D {
 
@@ -32,31 +29,11 @@ namespace H3D {
       Inst< SFInt32            > _outputDOF              = 0,
       Inst< SFInt32            > _hapticsRate            = 0,
       Inst< SFInt32            > _desiredHapticsRate     = 0,
-      Inst< SFNode             > _stylus                 = 0 ) :
-      com_thread( NULL ),
-      com_func_cb_handle( -1 ) {};
+      Inst< SFNode             > _stylus                 = 0 );
 
-    virtual ErrorCode initDevice( int _thread_frequency = 1000 );
-    virtual void initialize();
-    virtual void updateDeviceValues( DeviceValues &dv, HAPITime dt )
-    virtual void sendOutput( DeviceOutput &dv, HAPITime dt );
+    virtual ErrorCode initDevice();
 
-    /// Callback function for communication thread
-    static H3DUtil::PeriodicThread::CallbackCode com_func( void *data );
-
-    /// Callback handle to the com_func callback that is set up
-    int com_func_cb_handle;
-
-    /// Thread used to do communication with the haptics device
-    H3DUtil::PeriodicThread *com_thread;
-
-    /// Lock for exchanging data with the communication thread.
-    H3DUtil::MutexLock com_lock;
-
-    /// The current device values updated in the communicataion thread.
-    /// Access to this structure must be contained within locking with
-    /// com_lock.
-    DeviceValues current_values;
+    virtual ErrorCode releaseDevice();
 
     static H3DNodeDatabase database;
   };

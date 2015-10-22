@@ -6,6 +6,9 @@
 #include <utils/pseudo_inversion.h>
 #include <control_toolbox/filters.h>
 
+using namespace H3D;
+using namespace HAPI;
+
 namespace arm_state_controller
 {
     ArmStateController::ArmStateController() {}
@@ -38,11 +41,11 @@ namespace arm_state_controller
         //TODO: init hapi device
 
         if( hd.initDevice() != HAPIHapticsDevice::SUCCESS ) {
-          cerr << hd.getLastErrorMsg() << endl;
+          //cerr << hd.getLastErrorMsg() << endl;
           return false;
         }
         hd.enableDevice();
-        hd.setHapticsRenderer( new GodObjectRenderer );
+        //hd.setHapticsRenderer( new GodObjectRenderer );
 
         //set stylus for visual representation?
         //set surfaces and effects here!
