@@ -17,12 +17,12 @@
 
 namespace hapi_controller
 {
-    class hapi_controller: public controller_interface::KinematicChainControllerBase<hardware_interface::JointStateInterface>
+    class HapiController: public controller_interface::KinematicChainControllerBase<hardware_interface::JointStateInterface>
     {
     public:
 
-        hapi_controller();
-        ~hapi_controller();
+        HapiController();
+        ~HapiController();
 
         bool init(hardware_interface::JointStateInterface *robot, ros::NodeHandle &n);
         void starting(const ros::Time& time);

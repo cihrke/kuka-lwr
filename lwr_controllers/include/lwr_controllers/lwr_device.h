@@ -35,6 +35,8 @@ namespace H3D {
 
     virtual ErrorCode releaseDevice();
 
+    void updateHapticsDeviceValues();
+
     static H3DNodeDatabase database;
   };
 }

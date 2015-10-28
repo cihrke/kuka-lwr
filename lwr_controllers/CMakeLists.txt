@@ -63,6 +63,7 @@ add_library(${PROJECT_NAME}
   src/one_task_inverse_dynamics_jl.cpp
   src/gravity_compensation.cpp
   src/arm_state_controller.cpp
+  src/hapi_controller.cpp
 )
 
 add_dependencies(${PROJECT_NAME} ${PROJECT_NAME}_gencpp)

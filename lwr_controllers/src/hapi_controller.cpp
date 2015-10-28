@@ -82,6 +82,8 @@ namespace hapi_controller
 
                 //TODO: update hapi device and receive output
 
+                hd.updateHapticsDeviceValues();
+
                 // Compute Dynamics
                 int ret = id_solver_->CartToJnt(*joint_position_,
                                                 *joint_velocity_,
