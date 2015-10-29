@@ -59,7 +59,16 @@ LwrDevice::LwrDevice(
 H3DHapticsDevice::ErrorCode LwrDevice::initDevice() {
   HAPI::HAPIHapticsDevice::ErrorCode e = H3DHapticsDevice::initDevice();
   return e;
+}
 
+//fix input datatypes
+void updateHapticsDeviceValues(position_,
+                               rotation_,
+                               velocity_) {
+
+  LwrDevice::DeviceValues->position = position_;
+  LwrDevice::DeviceValues->rotation = rotation_;
+  LwrDevice::DeviceValues->velocity = velocity_;
 }
 
 H3DHapticsDevice::ErrorCode LwrDevice::releaseDevice() {

@@ -47,6 +47,8 @@ namespace hapi_controller
         ros::Time last_publish_time_;
         double publish_rate_;
 
+        KDL::Frame x_;
+
         //hapi stuff
 
         H3D::LwrDevice hd;
