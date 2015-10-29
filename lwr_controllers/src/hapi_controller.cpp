@@ -44,8 +44,6 @@ namespace hapi_controller
         }
         hd.enableDevice();
 
-        //set surfaces and effects here!
-
         return true;
     }
 

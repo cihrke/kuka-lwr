@@ -60,6 +60,29 @@ H3DHapticsDevice::ErrorCode LwrDevice::initDevice() {
   HAPI::HAPIHapticsDevice::ErrorCode e = H3DHapticsDevice::initDevice();
   H3DHapticsDevice::setHapticsRenderer( new GodObjectRenderer );
   //set stylus for visual representation
+
+  //set surfaces and effects here!
+
+  // Creating a default surface.
+  HAPISurfaceObject * my_surface = new FrictionSurface();
+  // Creating a sphere with radius 0.05 and center in (0, 0, 0). Units in m.
+  HapticPrimitive *my_haptic_sphere =  new HapticPrimitive(
+    new Collision::Sphere( Vec3( 0, 0, 0 ), 0.05 ),
+    my_surface );
+  // Add the shape to be rendered on the device.
+  H3DHapticsDevice::addShape( my_haptic_sphere );
+  // Transfer objects (shapes) to the haptics loop.
+  H3DHapticsDevice::transferObjects();
+
+  // The spring effect with a position and spring_constant input by the user.
+  HapticSpring *spring_effect = new HapticSpring( Vec3( x, y, z ),
+                                                  spring_constant );
+  // Add the effect to the haptics device.
+  H3DHapticsDevice::addEffect( spring_effect );
+  // Send the effect to the haptics loop and from now on it will be used to
+  // send forces to the device.
+  H3DHapticsDevice::transferObjects();
+
   return e;
 }
 
