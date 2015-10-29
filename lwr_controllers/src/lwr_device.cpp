@@ -58,17 +58,33 @@ LwrDevice::LwrDevice(
 
 H3DHapticsDevice::ErrorCode LwrDevice::initDevice() {
   HAPI::HAPIHapticsDevice::ErrorCode e = H3DHapticsDevice::initDevice();
+  H3DHapticsDevice::setHapticsRenderer( new GodObjectRenderer );
+  //set stylus for visual representation
   return e;
 }
 
-//fix input datatypes
-void updateHapticsDeviceValues(position_,
-                               rotation_,
-                               velocity_) {
+H3DHapticsDevice::ErrorCode updateDeviceValues(position_,
+                                               rotation_,
+                                               velocity_) {
 
   LwrDevice::DeviceValues->position = position_;
   LwrDevice::DeviceValues->rotation = rotation_;
   LwrDevice::DeviceValues->velocity = velocity_;
+
+  //fix
+  double dt = 0;
+
+  HAPI::HAPIHapticsDevice::ErrorCode e = H3DHapticsDevice::updateDeviceValues(LwrDevice::DeviceValues, dt);
+
+  return e;
+}
+
+Vec3f getForce() {
+  return LwrDevice::DeviceValues->force;
+}
+
+Vec3f getTorque() {
+  return LwrDevice::DeviceValues->torque;
 }
 
 H3DHapticsDevice::ErrorCode LwrDevice::releaseDevice() {

@@ -35,9 +35,12 @@ namespace H3D {
 
     virtual ErrorCode releaseDevice();
 
-    void updateHapticsDeviceValues(SFVec3f position_,
+    virtual ErrorCode updateDeviceValues(SFVec3f position_,
                                    SFRotation rotation_,
                                    SFVec3f velocity_);
+
+    Vec3f getForce();
+    Vec3f getTorque();
 
     static H3DNodeDatabase database;
   };

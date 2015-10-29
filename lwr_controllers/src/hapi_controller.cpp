@@ -38,16 +38,12 @@ namespace hapi_controller
         joint_wrenches_.reset(new KDL::Wrenches(kdl_chain_.getNrOfJoints()));
         joint_effort_est_.reset(new KDL::JntArray(kdl_chain_.getNrOfJoints()));
 
-        //TODO: init hapi device
-
         if( hd.initDevice() != HAPIHapticsDevice::SUCCESS ) {
           //cerr << hd.getLastErrorMsg() << endl;
           return false;
         }
         hd.enableDevice();
-        //hd.setHapticsRenderer( new GodObjectRenderer );
 
-        //set stylus for visual representation?
         //set surfaces and effects here!
 
         return true;
@@ -92,17 +88,18 @@ namespace hapi_controller
 
                 //use for velocity
                 //filters::exponentialSmoothing((joint_position_[j]-joint_position_prev_[j])/period.toSec(), joint_velocity_[j], 0.2);
-                SFVec3f acc;
+                Vec3f acc;
 
                 //time? const ros::Time& time
                 //fix type casting
                 Vec3f pos = Vec3f((float)x_.p(0), (float)x_.p(1), (float)x_.p(2));
-                SFRotation rot;// = SFRotation(x_.M);
+                H3D::Rotation rot;
+                //rot.data() = (float *)x_.M.data;
 
-                hd.updateHapticsDeviceValues(pos, rot, acc);
+                hd.updateDeviceValues(pos, rot, acc);
 
-                Vec3 force;// = hd.getForce();
-                Vec3 torque;// = hd.getTorque();
+                Vec3 force = hd.getForce();
+                Vec3 torque = hd.getTorque();
 
                 ROS_INFO("HAPI Output force x: %f, y: %f, z: %f", force.x, force.y, force.z);
                 ROS_INFO("HAPI Output torque x: %f, y: %f, z: %f", torque.x, torque.y, torque.z);
@@ -157,7 +154,9 @@ namespace hapi_controller
     }
 
     void HapiController::stopping(const ros::Time& time)
-    {}
+    {
+      hd.releaseDevice();
+    }
 
 }
 
