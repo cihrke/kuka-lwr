@@ -35,9 +35,9 @@ namespace H3D {
 
     virtual ErrorCode releaseDevice();
 
-    virtual ErrorCode updateDeviceValues(SFVec3f position_,
-                                   SFRotation rotation_,
-                                   SFVec3f velocity_);
+    virtual ErrorCode updateDeviceValues(SFVec3f    position_,
+                                         SFRotation rotation_,
+                                         SFVec3f    velocity_);
 
     Vec3f getForce();
     Vec3f getTorque();

@@ -91,8 +91,10 @@ namespace hapi_controller
                 //time? const ros::Time& time
                 //fix type casting
                 Vec3f pos = Vec3f((float)x_.p(0), (float)x_.p(1), (float)x_.p(2));
-                H3D::Rotation rot;
-                //rot.data() = (float *)x_.M.data;
+
+                //correct?
+                SFRotation rot;
+                rot.setValueFromVoidPtr((float *)x_.M.data, 9);
 
                 hd.updateDeviceValues(pos, rot, acc);
 
