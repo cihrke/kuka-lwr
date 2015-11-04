@@ -1,4 +1,4 @@
-#include <H3D/LwrDevice.h>
+#include <lwr_controllers/lwr_device.h>
 #ifdef HAVE_DHDAPI
 #include <HAPI/LwrHapticsDevice.h>
 #endif
