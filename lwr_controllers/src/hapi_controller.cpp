@@ -89,7 +89,7 @@ namespace hapi_controller
                 fk_solver_vel_->JntToCart(joint_velocity, v_);
 
                 Vec3f pos = Vec3f((float)p_.p(0), (float)p_.p(1), (float)p_.p(2));
-                Vec3f vel = Vec3f((float)v_.p(0), (float)v_.p(1), (float)v_.p(2));
+                Vec3f vel = Vec3f((float)v_.p.v(0), (float)v_.p.v(1), (float)v_.p.v(2));  // TODO: maybe v_.p.p?
 
                 //correct? fix type casting?
                 SFRotation rot;
