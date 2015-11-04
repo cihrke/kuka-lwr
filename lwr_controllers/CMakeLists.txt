@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(lwr_controllers)
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
+
 find_package(catkin REQUIRED COMPONENTS
   controller_interface
   control_msgs
@@ -15,6 +17,9 @@ find_package(catkin REQUIRED COMPONENTS
   cmake_modules
   kdl_conversions
 )
+
+find_package(H3DUtil)
+find_package(HAPI)
 
 include_directories(include ${Boost_INCLUDE_DIR} ${catkin_INCLUDE_DIRS})
 
@@ -68,7 +73,7 @@ add_library(${PROJECT_NAME}
 
 add_dependencies(${PROJECT_NAME} ${PROJECT_NAME}_gencpp)
 
-target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${H3DUTIL_LIBRARIES} ${HAPI_LIBRARIES})
 
 
 install(DIRECTORY include/${PROJECT_NAME}/
