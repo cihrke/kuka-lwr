@@ -1,4 +1,10 @@
 <library path="lib/liblwr_controllers">
+ 
+  <class name="hapi_controller/HapiController" type="hapi_controller::HapiController" base_class_type="controller_interface::ControllerBase">
+    <description>
+      Haptics feedback controller through H3D
+    </description>
+  </class>
   
   <class name="arm_state_controller/ArmStateController" type="arm_state_controller::ArmStateController" base_class_type="controller_interface::ControllerBase">
     <description>
