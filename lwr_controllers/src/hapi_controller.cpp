@@ -84,8 +84,9 @@ namespace hapi_controller
                   joint_msr_states_.q(i) = joint_handles_[i].getPosition();
                   joint_msr_states_.qdot(i) = joint_handles_[i].getVelocity();
                 }
+                KDL::JntArrayVel joint_velocity(joint_msr_states_.qdot);
                 fk_solver_pos_->JntToCart(joint_msr_states_.q, p_);
-                fk_solver_vel_->JntToCart(joint_msr_states_.qdot, v_);
+                fk_solver_vel_->JntToCart(joint_velocity, v_);
 
                 Vec3f pos = Vec3f((float)p_.p(0), (float)p_.p(1), (float)p_.p(2));
                 Vec3f vel = Vec3f((float)v_.p(0), (float)v_.p(1), (float)v_.p(2));
