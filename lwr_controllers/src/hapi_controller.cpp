@@ -12,7 +12,10 @@ using namespace HAPI;
 namespace hapi_controller
 {
     HapiController::HapiController() {}
-    HapiController::~HapiController() {}
+    HapiController::~HapiController() 
+    {
+        hd.releaseDevice();    
+    }
 
     bool HapiController::init(hardware_interface::JointStateInterface *robot, ros::NodeHandle &n)
     {
@@ -43,7 +46,6 @@ namespace hapi_controller
           //cerr << hd.getLastErrorMsg() << endl;
           return false;
         }
-        hd.enableDevice();
 
         return true;
     }
@@ -56,6 +58,8 @@ namespace hapi_controller
             (*joint_velocity_)(i) = joint_handles_[i].getVelocity();
             (*joint_acceleration_)(i) = 0;
         }
+        
+        hd.enableDevice();
 
         ROS_INFO("started");
     }
@@ -156,7 +160,7 @@ namespace hapi_controller
 
     void HapiController::stopping(const ros::Time& time)
     {
-      hd.releaseDevice();
+        hd.disableDevice();
     }
 
 }
