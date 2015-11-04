@@ -10,9 +10,9 @@
 #include <realtime_tools/realtime_publisher.h>
 
 #include <boost/scoped_ptr.hpp>
+#include <kdl/chainfksolvervel_recursive.hpp>
 
 #include <HAPI/AnyHapticsDevice.h>
-#include <HAPI/GodObjectRenderer.h>
 #include "lwr_device.h"
 
 namespace hapi_controller
@@ -35,7 +35,8 @@ namespace hapi_controller
 
         boost::scoped_ptr<KDL::ChainIdSolver_RNE> id_solver_;
         boost::scoped_ptr<KDL::ChainJntToJacSolver> jac_solver_;
-        boost::scoped_ptr<KDL::ChainFkSolverPos> fk_solver_;
+        boost::scoped_ptr<KDL::ChainFkSolverPos> fk_solver_pos_;
+        boost::scoped_ptr<KDL::ChainFkSolverVel> fk_solver_vel_;
         boost::scoped_ptr<KDL::Jacobian> jacobian_;
         boost::scoped_ptr<KDL::Vector> gravity_;
         boost::scoped_ptr<KDL::JntArray> joint_position_;
@@ -47,7 +48,8 @@ namespace hapi_controller
         ros::Time last_publish_time_;
         double publish_rate_;
 
-        KDL::Frame x_;
+        KDL::Frame p_;
+        KDL::FrameVel v_;
 
         //hapi stuff
 

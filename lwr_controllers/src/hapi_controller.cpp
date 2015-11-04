@@ -30,7 +30,8 @@ namespace hapi_controller
         gravity_.reset(new KDL::Vector(0.0, 0.0, -9.81)); // TODO: compute from actual robot position (TF?)
         id_solver_.reset(new KDL::ChainIdSolver_RNE(kdl_chain_, *gravity_));
         jac_solver_.reset(new KDL::ChainJntToJacSolver(kdl_chain_));
-        fk_solver_.reset(new KDL::ChainFkSolverPos_recursive(kdl_chain_));
+        fk_solver_pos_.reset(new KDL::ChainFkSolverPos_recursive(kdl_chain_));
+        fk_solver_vel_.reset(new KDL::ChainFkSolverVel_recursive(kdl_chain_));
         jacobian_.reset(new KDL::Jacobian(kdl_chain_.getNrOfJoints()));
         joint_position_.reset(new KDL::JntArray(kdl_chain_.getNrOfJoints()));
         joint_velocity_.reset(new KDL::JntArray(kdl_chain_.getNrOfJoints()));
@@ -55,6 +56,7 @@ namespace hapi_controller
             (*joint_velocity_)(i) = joint_handles_[i].getVelocity();
             (*joint_acceleration_)(i) = 0;
         }
+
         ROS_INFO("started");
     }
 
@@ -74,29 +76,26 @@ namespace hapi_controller
                     (*joint_acceleration_)(i) = acceleration;
                 }
 
-                //optimize
+                //TODO: update hapi device and receive output
+
+                //maybe acceleration?
                 for(int i=0; i < joint_handles_.size(); i++)
                 {
                   joint_msr_states_.q(i) = joint_handles_[i].getPosition();
+                  joint_msr_states_.qdot(i) = joint_handles_[i].getVelocity();
                 }
+                fk_solver_pos_->JntToCart(joint_msr_states_.q, p_);
+                fk_solver_vel_->JntToCart(joint_msr_states_.qdot, v_);
 
-                //TODO: update hapi device and receive output
+                Vec3f pos = Vec3f((float)p_.p(0), (float)p_.p(1), (float)p_.p(2));
+                Vec3f vel = Vec3f((float)v_.p(0), (float)v_.p(1), (float)v_.p(2));
 
-                fk_solver_->JntToCart(joint_msr_states_.q,x_);
-
-                //use for velocity
-                //filters::exponentialSmoothing((joint_position_[j]-joint_position_prev_[j])/period.toSec(), joint_velocity_[j], 0.2);
-                Vec3f acc;
+                //correct? fix type casting?
+                SFRotation rot;
+                rot.setValueFromVoidPtr((float *)p_.M.data, 9);
 
                 //time? const ros::Time& time
-                //fix type casting
-                Vec3f pos = Vec3f((float)x_.p(0), (float)x_.p(1), (float)x_.p(2));
-
-                //correct?
-                SFRotation rot;
-                rot.setValueFromVoidPtr((float *)x_.M.data, 9);
-
-                hd.updateDeviceValues(pos, rot, acc);
+                hd.updateDeviceValues(pos, rot, vel);
 
                 Vec3 force = hd.getForce();
                 Vec3 torque = hd.getTorque();
@@ -134,19 +133,20 @@ namespace hapi_controller
 
                 KDL::Wrench wrench;
 
-                for (unsigned int i = 0; i < 6; i++)
-                    for (unsigned int j = 0; j < kdl_chain_.getNrOfJoints(); j++)
+                for (unsigned int i = 0; i < 6; i++) {
+                    for (unsigned int j = 0; j < kdl_chain_.getNrOfJoints(); j++) {
                         wrench[i] += jinv(i,j) * realtime_pub_->msg_.est_ext_torques[j];
+                    }
+                }
 
                 tf::wrenchKDLToMsg(wrench, realtime_pub_->msg_.est_ee_wrench_base);
 
                 // Transform cartesian wrench into tool reference frame
                 KDL::Frame tool_frame;
-                fk_solver_->JntToCart(*joint_position_, tool_frame);
+                fk_solver_pos_->JntToCart(*joint_position_, tool_frame);
                 KDL::Wrench tool_wrench = tool_frame * wrench;
 
                 tf::wrenchKDLToMsg(tool_wrench, realtime_pub_->msg_.est_ee_wrench);
-
 
                 realtime_pub_->unlockAndPublish();
             }
