@@ -6,15 +6,21 @@
 #include <utils/pseudo_inversion.h>
 #include <control_toolbox/filters.h>
 
+#include <HAPI/HapticSpring.h>
+#include <HAPI/GodObjectRenderer.h>
+#include <HAPI/HapticPrimitive.h>
+#include <HAPI/HAPISurfaceObject.h>
+#include <HAPI/FrictionSurface.h>
+
 using namespace H3D;
 using namespace HAPI;
 
 namespace hapi_controller
 {
     HapiController::HapiController() {}
-    HapiController::~HapiController() 
+    HapiController::~HapiController()
     {
-        hd.releaseDevice();    
+        hd.releaseDevice();
     }
 
     bool HapiController::init(hardware_interface::JointStateInterface *robot, ros::NodeHandle &n)
@@ -58,7 +64,31 @@ namespace hapi_controller
             (*joint_velocity_)(i) = joint_handles_[i].getVelocity();
             (*joint_acceleration_)(i) = 0;
         }
-        
+
+        hd.setHapticsRenderer(new GodObjectRenderer);
+        //set stylus for visual representation
+
+        //set surfaces and effects here!
+
+        // Creating a default surface.
+        HAPISurfaceObject * my_surface = new FrictionSurface();
+        // Creating a sphere with radius 0.05 and center in (0, 0, 0). Units in m.
+        HapticPrimitive *my_haptic_sphere =  new HapticPrimitive(
+          new Collision::Sphere( Vec3( 0, 0, 0 ), 0.05 ),
+          my_surface );
+        // Add the shape to be rendered on the device.
+        hd.addShape( my_haptic_sphere );
+        // Transfer objects (shapes) to the haptics loop.
+        hd.transferObjects();
+
+        // The spring effect with a position and spring_constant input by the user.
+        HapticSpring *spring_effect = new HapticSpring( Vec3( 0, 0, 0 ), 0.5 );
+        // Add the effect to the haptics device.
+        hd.addEffect( spring_effect );
+        // Send the effect to the haptics loop and from now on it will be used to
+        // send forces to the device.
+        hd.transferObjects();
+
         hd.enableDevice();
 
         ROS_INFO("started");
@@ -88,7 +118,9 @@ namespace hapi_controller
                   joint_msr_states_.q(i) = joint_handles_[i].getPosition();
                   joint_msr_states_.qdot(i) = joint_handles_[i].getVelocity();
                 }
+
                 KDL::JntArrayVel joint_velocity(joint_msr_states_.qdot);
+
                 fk_solver_pos_->JntToCart(joint_msr_states_.q, p_);
                 fk_solver_vel_->JntToCart(joint_velocity, v_);
 
@@ -100,7 +132,7 @@ namespace hapi_controller
                 rot.setValueFromVoidPtr((float *)p_.M.data, 9);
 
                 //time? const ros::Time& time
-                hd.updateDeviceValues(pos, rot, vel);
+                //hd.updateDeviceValues(pos, rot, vel);
 
                 Vec3 force = hd.getForce();
                 Vec3 torque = hd.getTorque();

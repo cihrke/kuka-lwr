@@ -53,7 +53,7 @@ namespace hapi_controller
 
         //hapi stuff
 
-        H3D::LwrDevice hd;
+        HAPI::AnyHapticsDevice hd;
         //load surfaces and effects here?
     };
 }
