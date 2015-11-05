@@ -68,7 +68,6 @@ add_library(${PROJECT_NAME}
   src/one_task_inverse_dynamics_jl.cpp
   src/gravity_compensation.cpp
   src/arm_state_controller.cpp
-  src/lwr_device.cpp
   src/hapi_controller.cpp
 )
 

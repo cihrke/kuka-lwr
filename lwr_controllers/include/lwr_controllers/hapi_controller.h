@@ -13,7 +13,7 @@
 #include <kdl/chainfksolvervel_recursive.hpp>
 
 #include <HAPI/AnyHapticsDevice.h>
-#include "lwr_device.h"
+#include <HAPI/LwrHapticsDevice.h>
 
 namespace hapi_controller
 {
@@ -53,8 +53,7 @@ namespace hapi_controller
 
         //hapi stuff
 
-        HAPI::AnyHapticsDevice hd;
-        //load surfaces and effects here?
+        HAPI::LwrHapticsDevice hd;
     };
 }
 

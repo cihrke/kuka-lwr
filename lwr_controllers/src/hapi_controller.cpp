@@ -6,13 +6,13 @@
 #include <utils/pseudo_inversion.h>
 #include <control_toolbox/filters.h>
 
+#include <H3DUtil/H3DUtil.h>
 #include <HAPI/HapticSpring.h>
 #include <HAPI/GodObjectRenderer.h>
 #include <HAPI/HapticPrimitive.h>
 #include <HAPI/HAPISurfaceObject.h>
 #include <HAPI/FrictionSurface.h>
 
-using namespace H3D;
 using namespace HAPI;
 
 namespace hapi_controller
@@ -124,15 +124,15 @@ namespace hapi_controller
                 fk_solver_pos_->JntToCart(joint_msr_states_.q, p_);
                 fk_solver_vel_->JntToCart(joint_velocity, v_);
 
-                Vec3f pos = Vec3f((float)p_.p(0), (float)p_.p(1), (float)p_.p(2));
-                Vec3f vel = Vec3f((float)v_.p.v(0), (float)v_.p.v(1), (float)v_.p.v(2));  // TODO: maybe v_.p.p?
+                Vec3 pos = Vec3((float)p_.p(0), (float)p_.p(1), (float)p_.p(2));
+                Vec3 vel = Vec3((float)v_.p.v(0), (float)v_.p.v(1), (float)v_.p.v(2));  // TODO: maybe v_.p.p?
 
-                //correct? fix type casting?
-                SFRotation rot;
-                rot.setValueFromVoidPtr((float *)p_.M.data, 9);
+                //correct?
+                Rotation rot = Rotation(Vec3((float)p_.M.GetRot()[0], (float)p_.M.GetRot()[1],
+                                             (float)p_.M.GetRot()[2]),(float)p_.M.GetRot().Norm());
 
                 //time? const ros::Time& time
-                //hd.updateDeviceValues(pos, rot, vel);
+                hd.updateValues(pos, vel, rot);
 
                 Vec3 force = hd.getForce();
                 Vec3 torque = hd.getTorque();
