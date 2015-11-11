@@ -14,6 +14,10 @@
 
 #include <HAPI/AnyHapticsDevice.h>
 #include <HAPI/LwrHapticsDevice.h>
+#include <HAPI/HapticPrimitive.h>
+#include <H3DUtil/H3DUtil.h>
+
+using namespace HAPI;
 
 namespace hapi_controller
 {
@@ -28,6 +32,9 @@ namespace hapi_controller
         void starting(const ros::Time& time);
         void update(const ros::Time& time, const ros::Duration& period);
         void stopping(const ros::Time& time);
+        Vec3 getPos();
+        Vec3 getVel();
+        Rotation getRot();
 
     private:
 
@@ -54,6 +61,10 @@ namespace hapi_controller
         //hapi stuff
 
         HAPI::LwrHapticsDevice hd;
+
+        Vec3 hapi_pos;
+        Vec3 hapi_vel;
+        Rotation hapi_rot;
     };
 }
 
