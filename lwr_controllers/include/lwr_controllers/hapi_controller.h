@@ -21,14 +21,14 @@ using namespace HAPI;
 
 namespace hapi_controller
 {
-    class HapiController: public controller_interface::KinematicChainControllerBase<hardware_interface::JointStateInterface>
+    class HapiController: public controller_interface::KinematicChainControllerBase<hardware_interface::EffortJointInterface>
     {
     public:
 
         HapiController();
         ~HapiController();
 
-        bool init(hardware_interface::JointStateInterface *robot, ros::NodeHandle &n);
+        bool init(hardware_interface::EffortJointInterface *robot, ros::NodeHandle &n);
         void starting(const ros::Time& time);
         void update(const ros::Time& time, const ros::Duration& period);
         void stopping(const ros::Time& time);
