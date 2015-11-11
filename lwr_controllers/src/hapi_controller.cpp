@@ -128,10 +128,9 @@ namespace hapi_controller
 
                 //correct?
                 hapi_rot = Rotation(Vec3((float)p_.M.GetRot()[0], (float)p_.M.GetRot()[1],
-                                             (float)p_.M.GetRot()[2]),(float)p_.M.GetRot().Norm());
+                                         (float)p_.M.GetRot()[2]),(float)p_.M.GetRot().Norm());
 
-                //time? const ros::Time& time
-                //hd.updateValues(pos, vel, rot);
+                hd.updateValues(pos, vel, rot);
 
                 //get values from HAPI
                 Vec3 force = hd.getForce();
