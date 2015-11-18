@@ -74,19 +74,15 @@ namespace hapi_controller
 		HAPISurfaceObject * my_surface = new FrictionSurface();
 		// Creating a sphere with radius 0.05 and center in (0, 0, 0). Units in m.
 		HapticPrimitive *my_haptic_sphere =  new HapticPrimitive(
-			new Collision::Sphere( position, 0.05 ),
-																my_surface );
+            new Collision::Sphere( position, 0.05 ), my_surface );
 		// Add the shape to be rendered on the device.
 		hd.addShape( my_haptic_sphere );
-		// Transfer objects (shapes) to the haptics loop.
-		hd.transferObjects();
 		
 		// The spring effect with a position and spring_constant input by the user.
 		HapticSpring *spring_effect = new HapticSpring( position, 0.5 );
 		// Add the effect to the haptics device.
 		hd.addEffect( spring_effect );
-		// Send the effect to the haptics loop and from now on it will be used to
-		// send forces to the device.
+
 		hd.transferObjects();
 		
 		hd.enableDevice();
@@ -128,23 +124,20 @@ namespace hapi_controller
 			hapi_pos = Vec3((float)p_.p(0), (float)p_.p(1), (float)p_.p(2));
 			hapi_vel = Vec3((float)v_.p.v(0), (float)v_.p.v(1), (float)v_.p.v(2));  // TODO: maybe v_.p.p?
 			
-			//correct?
+            //TODO: correct?
 			hapi_rot = Rotation(Vec3((float)p_.M.GetRot()[0], (float)p_.M.GetRot()[1],
-									(float)p_.M.GetRot()[2]),(float)p_.M.GetRot().Norm());
-			
+                                     (float)p_.M.GetRot()[2]),(float)p_.M.GetRot().Norm());
+
+            //send data to hapi
 			hd.updateValues(hapi_pos, hapi_vel, hapi_rot);
 			
 			//get values from HAPI
 			Vec3 force = hd.getForce();
 			Vec3 torque = hd.getTorque();
 			
-			(*joint_wrenches_)[kdl_chain_.getNrOfJoints()-1].force.x(force.x);
-			(*joint_wrenches_)[kdl_chain_.getNrOfJoints()-1].force.y(force.y);
-			(*joint_wrenches_)[kdl_chain_.getNrOfJoints()-1].force.z(force.z);
-			(*joint_wrenches_)[kdl_chain_.getNrOfJoints()-1].torque.x(torque.x);
-			(*joint_wrenches_)[kdl_chain_.getNrOfJoints()-1].torque.y(torque.y);
-			(*joint_wrenches_)[kdl_chain_.getNrOfJoints()-1].torque.z(torque.z);
-			
+            (*joint_wrenches_)[kdl_chain_.getNrOfJoints()-1].force = KDL::Vector(force.x, force.y, force.z);
+            (*joint_wrenches_)[kdl_chain_.getNrOfJoints()-1].torque = KDL::Vector(torque.x, torque.y, torque.z);
+
 			// Compute Dynamics
 			int ret = id_solver_->CartToJnt(*joint_position_,
 											*joint_velocity_,
@@ -166,10 +159,7 @@ namespace hapi_controller
 				for (unsigned i=0; i<joint_handles_.size(); i++) {
 					realtime_pub_->msg_.est_ext_torques[i] = (*joint_effort_est_)(i);
 				}
-				
-				
-				
-				
+
 				// Compute cartesian wrench on end effector
 				ret = jac_solver_->JntToJac(*joint_position_, *jacobian_);
 				if (ret < 0) {
