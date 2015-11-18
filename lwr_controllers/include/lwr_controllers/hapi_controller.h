@@ -16,6 +16,12 @@
 #include <HAPI/LwrHapticsDevice.h>
 #include <HAPI/HapticPrimitive.h>
 #include <H3DUtil/H3DUtil.h>
+#include <HAPI/HAPIForceEffect.h>
+#include <HAPI/HAPISurfaceObject.h>
+#include <HAPI/FrictionSurface.h>
+
+#include <lwr_controllers/Effects.h>
+
 
 using namespace HAPI;
 
@@ -60,11 +66,18 @@ namespace hapi_controller
 
         //hapi stuff
 
+        void effectsCallback(const lwr_controllers::Effects::ConstPtr &msg);
+        ros::Subscriber effects_sub; // = n.subscribe("effects", 1000, effectsCallback);
+
         HAPI::LwrHapticsDevice hd;
 
         Vec3 hapi_pos;
         Vec3 hapi_vel;
         Rotation hapi_rot;
+
+        HapticPrimitive   *primitives;
+        HAPISurfaceObject *surfaces;
+        HAPIForceEffect   *force_effects;
     };
 }
 

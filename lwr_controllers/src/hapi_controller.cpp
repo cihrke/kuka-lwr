@@ -6,10 +6,8 @@
 #include <utils/pseudo_inversion.h>
 #include <control_toolbox/filters.h>
 
-#include <HAPI/HapticSpring.h>
 #include <HAPI/GodObjectRenderer.h>
-#include <HAPI/HAPISurfaceObject.h>
-#include <HAPI/FrictionSurface.h>
+
 
 using namespace HAPI;
 
@@ -66,25 +64,6 @@ namespace hapi_controller
 		hd.setHapticsRenderer(new GodObjectRenderer);
 		//set stylus for visual representation
 		
-		//set surfaces and effects here!
-		
-		Vec3 position(0.6, 0, 1);
-		
-		// Creating a default surface.
-		HAPISurfaceObject * my_surface = new FrictionSurface();
-		// Creating a sphere with radius 0.05 and center in (0, 0, 0). Units in m.
-		HapticPrimitive *my_haptic_sphere =  new HapticPrimitive(
-            new Collision::Sphere( position, 0.05 ), my_surface );
-		// Add the shape to be rendered on the device.
-		hd.addShape( my_haptic_sphere );
-		
-		// The spring effect with a position and spring_constant input by the user.
-		HapticSpring *spring_effect = new HapticSpring( position, 0.5 );
-		// Add the effect to the haptics device.
-		hd.addEffect( spring_effect );
-
-		hd.transferObjects();
-		
 		hd.enableDevice();
 		
 		ROS_INFO("started");
@@ -93,8 +72,7 @@ namespace hapi_controller
 	void HapiController::update(const ros::Time& time, const ros::Duration& period)
 	{
 		// limit rate of publishing
-		if (publish_rate_ > 0.0 && last_publish_time_ + ros::Duration(1.0/publish_rate_) < time){
-			
+		if (publish_rate_ > 0.0 && last_publish_time_ + ros::Duration(1.0/publish_rate_) < time){			
 			
 			// we're actually publishing, so increment time
 			last_publish_time_ = last_publish_time_ + ros::Duration(1.0/publish_rate_);
@@ -106,9 +84,7 @@ namespace hapi_controller
 				(*joint_acceleration_)(i) = acceleration;
 			}
 			
-			//TODO: update hapi device and receive output
-			
-			//maybe acceleration?
+            //TODO: maybe acceleration?
 			for(int i=0; i < joint_handles_.size(); i++)
 			{
 				joint_msr_states_.q(i) = joint_handles_[i].getPosition();
@@ -200,6 +176,19 @@ namespace hapi_controller
 	{
 		hd.disableDevice();
 	}
+
+    void HapiController::effectsCallback(const lwr_controllers::Effects::ConstPtr &msg){
+
+
+
+
+        hd.transferObjects();
+
+    }
+
+
+
+    //remove get functions?
 	
 	Vec3 HapiController::getPos() {
 		return hapi_pos;
