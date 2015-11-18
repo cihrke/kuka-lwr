@@ -18,9 +18,11 @@
 #include <H3DUtil/H3DUtil.h>
 #include <HAPI/HAPIForceEffect.h>
 #include <HAPI/HAPISurfaceObject.h>
+#include <HAPI/HapticSpring.h>
 #include <HAPI/FrictionSurface.h>
 
-#include <lwr_controllers/Effects.h>
+#include <lwr_controllers/Effect.h>
+#include <lwr_controllers/Primitive.h>
 
 
 using namespace HAPI;
@@ -66,8 +68,11 @@ namespace hapi_controller
 
         //hapi stuff
 
-        void effectsCallback(const lwr_controllers::Effects::ConstPtr &msg);
-        ros::Subscriber effects_sub; // = n.subscribe("effects", 1000, effectsCallback);
+        void effectsCallback(const lwr_controllers::Effect::ConstPtr &msg);
+        ros::Subscriber effects_sub;
+
+        void primitivesCallback(const lwr_controllers::Primitive::ConstPtr &msg);
+        ros::Subscriber primitives_sub;
 
         HAPI::LwrHapticsDevice hd;
 

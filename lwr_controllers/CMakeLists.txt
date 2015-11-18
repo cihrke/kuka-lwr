@@ -31,7 +31,8 @@ add_message_files(
    RPY.msg
    MultiPriorityTask.msg
    ArmState.msg
-   Effects.msg
+   Effect.msg
+   Primitive.msg
 )
 
 generate_messages(

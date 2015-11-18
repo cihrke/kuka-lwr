@@ -31,6 +31,9 @@ namespace hapi_controller
 		
 		realtime_pub_.reset(new realtime_tools::RealtimePublisher<lwr_controllers::ArmState>(nh_,"arm_state",4));
 		realtime_pub_->msg_.est_ext_torques.resize(kdl_chain_.getNrOfJoints());
+
+        effects_sub = nh_.subscribe("effects", 1000, &HapiController::effectsCallback, this);
+        primitives_sub = nh_.subscribe("primitives", 1000, &HapiController::primitivesCallback, this);
 		
 		gravity_.reset(new KDL::Vector(0.0, 0.0, -9.81)); // TODO: compute from actual robot position (TF?)
 		id_solver_.reset(new KDL::ChainIdSolver_RNE(kdl_chain_, *gravity_));
@@ -177,16 +180,45 @@ namespace hapi_controller
 		hd.disableDevice();
 	}
 
-    void HapiController::effectsCallback(const lwr_controllers::Effects::ConstPtr &msg){
+    //TODO: change to accept arrays
+    void HapiController::effectsCallback(const lwr_controllers::Effect::ConstPtr &msg){
 
+        std::string type = msg->type;
+        Vec3 pos = Vec3(msg->position[0], msg->position[1], msg->position[2]);
 
+        if(type == "SpringEffect") {
+            HapticSpring *spring_effect = new HapticSpring(pos, (float)msg->constant);
+            hd.addEffect(spring_effect);
+        }
 
 
         hd.transferObjects();
 
     }
 
+    //TODO: change to accept arrays
+    void HapiController::primitivesCallback(const lwr_controllers::Primitive::ConstPtr &msg){
 
+        HAPISurfaceObject *surface;
+        HapticPrimitive *primitive;
+
+        std::string type_surface = msg->surface;
+        std::string type = msg->type;
+        Vec3 pos = Vec3(msg->position[0], msg->position[1], msg->position[2]);
+
+        if(type_surface == "FrictionSurface"){
+                surface = new FrictionSurface();
+        }
+
+        if(type == "Sphere"){
+            primitive = new HapticPrimitive(new Collision::Sphere(pos, (float)msg->constant ), surface );
+            hd.addShape(primitive);
+        }
+
+
+        hd.transferObjects();
+
+    }
 
     //remove get functions?
 	
