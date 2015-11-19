@@ -241,8 +241,25 @@ namespace hapi_controller
         if(type == "Sphere"){
             primitive = new HapticPrimitive(new Collision::Sphere(pos, msg->data[0]), surface );
             hd.addShape(primitive);
-        } else if(true) {
-
+        } else if(type == "Cylinder") {
+            primitive = new HapticPrimitive(new Collision::Cylinder(msg->data[0], msg->data[1]), surface );
+            hd.addShape(primitive);
+        } else if(type == "LineSegment") {
+            Vec3 end = Vec3(msg->data[0], msg->data[1], msg->data[2]);
+            primitive = new HapticPrimitive(new Collision::LineSegment (pos, end), surface );
+            hd.addShape(primitive);
+        } else if(type == "Plane") {
+            Vec3 end = Vec3(msg->data[0], msg->data[1], msg->data[2]);
+            primitive = new HapticPrimitive(new Collision::Plane(pos, end), surface );
+            hd.addShape(primitive);
+        } else if(type == "Point"){
+            primitive = new HapticPrimitive(new Collision::Point(pos), surface );
+            hd.addShape(primitive);
+        } else if(type == "Triangle"){
+            Vec3 b = Vec3(msg->data[0], msg->data[1], msg->data[2]);
+            Vec3 c = Vec3(msg->data[3], msg->data[4], msg->data[5]);
+            primitive = new HapticPrimitive(new Collision::Triangle(pos, b, c), surface );
+            hd.addShape(primitive);
         } else {
             ROS_ERROR("Wrong primitve message!");
         }
