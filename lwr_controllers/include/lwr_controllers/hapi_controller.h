@@ -14,12 +14,7 @@
 
 #include <HAPI/AnyHapticsDevice.h>
 #include <HAPI/LwrHapticsDevice.h>
-#include <HAPI/HapticPrimitive.h>
 #include <H3DUtil/H3DUtil.h>
-#include <HAPI/HAPIForceEffect.h>
-#include <HAPI/HAPISurfaceObject.h>
-#include <HAPI/HapticSpring.h>
-#include <HAPI/FrictionSurface.h>
 
 #include <lwr_controllers/Effect.h>
 #include <lwr_controllers/Primitive.h>
@@ -79,10 +74,6 @@ namespace hapi_controller
         Vec3 hapi_pos;
         Vec3 hapi_vel;
         Rotation hapi_rot;
-
-        HapticPrimitive   *primitives;
-        HAPISurfaceObject *surfaces;
-        HAPIForceEffect   *force_effects;
     };
 }
 

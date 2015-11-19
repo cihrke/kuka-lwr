@@ -8,6 +8,20 @@
 
 #include <HAPI/GodObjectRenderer.h>
 
+#include <HAPI/HapticPrimitive.h>
+#include <HAPI/HAPIForceEffect.h>
+#include <HAPI/HAPISurfaceObject.h>
+#include <HAPI/FrictionSurface.h>
+
+//effects
+#include <HAPI/HapticSpring.h>
+#include <HAPI/HapticForceField.h>
+#include <HAPI/HapticRotationalSpring.h>
+#include <HAPI/HapticViscosity.h>
+#include <HAPI/HapticPositionFunctionEffect.h>
+#include <HAPI/HapticTimeFunctionEffect.h>
+#include <HAPI/HapticShapeConstraint.h>
+
 
 using namespace HAPI;
 
@@ -183,12 +197,26 @@ namespace hapi_controller
     //TODO: change to accept arrays
     void HapiController::effectsCallback(const lwr_controllers::Effect::ConstPtr &msg){
 
-        std::string type = msg->type;
-        Vec3 pos = Vec3(msg->position[0], msg->position[1], msg->position[2]);
+        std::string type = msg->type;      
 
-        if(type == "SpringEffect") {
-            HapticSpring *spring_effect = new HapticSpring(pos, (float)msg->constant);
+        if(type == "Spring") {
+            Vec3 pos = Vec3(msg->data[0], msg->data[1], msg->data[2]);
+            HapticSpring *spring_effect = new HapticSpring(pos, msg->data[0]);
             hd.addEffect(spring_effect);
+        } else if(type == "RotationalSpring") {
+            Vec3 axis = Vec3(msg->data[0], msg->data[1], msg->data[2]);
+            HapticRotationalSpring *rotspring = new HapticRotationalSpring(axis, msg->data[3], msg->data[4]);
+            hd.addEffect(rotspring);
+        } else if(type == "ForceField") {
+            Vec3 force = Vec3(msg->data[0], msg->data[1], msg->data[2]);
+            Vec3 torque = Vec3(msg->data[3], msg->data[4], msg->data[5]);
+            HapticForceField *forcefield = new HapticForceField(force, torque);
+            hd.addEffect(forcefield);
+        } else if(type == "Viscosity") {
+            HapticViscosity *viscosity = new HapticViscosity (msg->data[0], msg->data[1], msg->data[2]);
+            hd.addEffect(viscosity);
+        } else {
+            ROS_ERROR("Wrong effect message!");
         }
 
 
@@ -207,12 +235,16 @@ namespace hapi_controller
         Vec3 pos = Vec3(msg->position[0], msg->position[1], msg->position[2]);
 
         if(type_surface == "FrictionSurface"){
-                surface = new FrictionSurface();
+            surface = new FrictionSurface();
         }
 
         if(type == "Sphere"){
-            primitive = new HapticPrimitive(new Collision::Sphere(pos, (float)msg->constant ), surface );
+            primitive = new HapticPrimitive(new Collision::Sphere(pos, msg->data[0]), surface );
             hd.addShape(primitive);
+        } else if(true) {
+
+        } else {
+            ROS_ERROR("Wrong primitve message!");
         }
 
 
