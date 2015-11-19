@@ -216,7 +216,7 @@ namespace hapi_controller
             HapticViscosity *viscosity = new HapticViscosity (msg->data[0], msg->data[1], msg->data[2]);
             hd.addEffect(viscosity);
         } else {
-            ROS_ERROR("Wrong effect message!");
+            ROS_ERROR("Wrong or no effect specified!");
         }
 
 
@@ -232,11 +232,15 @@ namespace hapi_controller
 
         std::string type_surface = msg->surface;
         std::string type = msg->type;
-        Vec3 pos = Vec3(msg->position[0], msg->position[1], msg->position[2]);
 
         if(type_surface == "FrictionSurface"){
-            surface = new FrictionSurface();
+            surface = new FrictionSurface(msg->param_surface[0], msg->param_surface[1],
+                                          msg->param_surface[2], msg->param_surface[3]);
+        } else {
+            ROS_ERROR("Wrong or no surface specified!");
         }
+
+        Vec3 pos = Vec3(msg->position[0], msg->position[1], msg->position[2]);
 
         if(type == "Sphere"){
             primitive = new HapticPrimitive(new Collision::Sphere(pos, msg->data[0]), surface );
@@ -261,7 +265,7 @@ namespace hapi_controller
             primitive = new HapticPrimitive(new Collision::Triangle(pos, b, c), surface );
             hd.addShape(primitive);
         } else {
-            ROS_ERROR("Wrong primitve message!");
+            ROS_ERROR("Wrong or no primitve specified!");
         }
 
 
