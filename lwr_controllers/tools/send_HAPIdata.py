@@ -1,32 +1,40 @@
 #!/usr/bin/env python
 
 import rospy
-from lwr_controllers import Effect
-from lwr_controllers import Primitive
+from lwr_controllers.msg import Effect
+from lwr_controllers.msg import Primitive
 
+# Node example class.
+class NodeExample():
+    # Must have __init__(self) function for a class, similar to a C++ class constructor.
+    def __init__(self):
+	prim_pub = rospy.Publisher('/lwr/HapiController/primitives', Primitive, queue_size=10)
+	eff_pub = rospy.Publisher('/lwr/HapiController/effects', Effect, queue_size=10)
+	rate = rospy.Rate(1) 
 
-def talker():
-    pub = rospy.Publisher('chatter', String, queue_size=10)
-    rospy.init_node('primitives', anonymous=True)
-    rate = rospy.Rate(1) # 10hz
+	eff = Effect()
+	eff.type = "Spring"
+	eff.data = [0,5,0,0.15]
+	
+	prim = Primitive()
+	prim.type = "Sphere"
+	prim.surface = "FrictionSurface"
+	prim.param_surface = [0,0,0,0]
+	prim.position = [0,5,0]
+	prim.data = [0.02]
 
-    Effect eff
-
-    eff.type = "Spring"
-    eff.data = [0,0,0,0.05]
- 
-    Primitive prim
-    prim.type = "Sphere"
-    prim.pos = [0,0,0]
-    prim.data = 0.05
-
-    while not rospy.is_shutdown():
-        rospy.loginfo(prim)
-        pub.publish(prim)
-        rate.sleep()
+	while not rospy.is_shutdown():
+	    rospy.loginfo(prim)
+	    prim_pub.publish(prim)
+	    rospy.loginfo(eff)
+	    eff_pub.publish(eff)
+	    rate.sleep()
 
 if __name__ == '__main__':
+    # Initialize the node and name it.
+    rospy.init_node('pytalker')
+    
     try:
-        talker()
+        ne = NodeExample()
     except rospy.ROSInterruptException:
         pass

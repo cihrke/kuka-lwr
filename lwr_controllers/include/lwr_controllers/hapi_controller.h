@@ -64,10 +64,10 @@ namespace hapi_controller
         //hapi stuff
 
         void effectsCallback(const lwr_controllers::Effect::ConstPtr &msg);
-        ros::Subscriber effects_sub;
+        ros::Subscriber effects_sub_;
 
         void primitivesCallback(const lwr_controllers::Primitive::ConstPtr &msg);
-        ros::Subscriber primitives_sub;
+        ros::Subscriber primitives_sub_;
 
         HAPI::LwrHapticsDevice hd;
 

@@ -46,8 +46,8 @@ namespace hapi_controller
 		realtime_pub_.reset(new realtime_tools::RealtimePublisher<lwr_controllers::ArmState>(nh_,"arm_state",4));
 		realtime_pub_->msg_.est_ext_torques.resize(kdl_chain_.getNrOfJoints());
 
-        effects_sub = nh_.subscribe("effects", 1000, &HapiController::effectsCallback, this);
-        primitives_sub = nh_.subscribe("primitives", 1000, &HapiController::primitivesCallback, this);
+		effects_sub_ = nh_.subscribe("effects", 1, &HapiController::effectsCallback, this);
+		primitives_sub_ = nh_.subscribe("primitives", 1, &HapiController::primitivesCallback, this);
 		
 		gravity_.reset(new KDL::Vector(0.0, 0.0, -9.81)); // TODO: compute from actual robot position (TF?)
 		id_solver_.reset(new KDL::ChainIdSolver_RNE(kdl_chain_, *gravity_));
@@ -101,7 +101,7 @@ namespace hapi_controller
 				(*joint_acceleration_)(i) = acceleration;
 			}
 			
-            //TODO: maybe acceleration?
+			//TODO: maybe acceleration?
 			for(int i=0; i < joint_handles_.size(); i++)
 			{
 				joint_msr_states_.q(i) = joint_handles_[i].getPosition();
@@ -117,19 +117,21 @@ namespace hapi_controller
 			hapi_pos = Vec3((float)p_.p(0), (float)p_.p(1), (float)p_.p(2));
 			hapi_vel = Vec3((float)v_.p.v(0), (float)v_.p.v(1), (float)v_.p.v(2));  // TODO: maybe v_.p.p?
 			
-            //TODO: correct?
+			//TODO: correct?
 			hapi_rot = Rotation(Vec3((float)p_.M.GetRot()[0], (float)p_.M.GetRot()[1],
                                      (float)p_.M.GetRot()[2]),(float)p_.M.GetRot().Norm());
 
-            //send data to hapi
+			//send data to hapi
 			hd.updateValues(hapi_pos, hapi_vel, hapi_rot);
 			
 			//get values from HAPI
 			Vec3 force = hd.getForce();
 			Vec3 torque = hd.getTorque();
 			
-            (*joint_wrenches_)[kdl_chain_.getNrOfJoints()-1].force = KDL::Vector(force.x, force.y, force.z);
-            (*joint_wrenches_)[kdl_chain_.getNrOfJoints()-1].torque = KDL::Vector(torque.x, torque.y, torque.z);
+			std::cout << "received force: " << force << " torque: " << torque << std::endl; 
+			
+			(*joint_wrenches_)[kdl_chain_.getNrOfJoints()-1].force = KDL::Vector(force.x, force.y, force.z);
+			(*joint_wrenches_)[kdl_chain_.getNrOfJoints()-1].torque = KDL::Vector(torque.x, torque.y, torque.z);
 
 			// Compute Dynamics
 			int ret = id_solver_->CartToJnt(*joint_position_,
@@ -203,6 +205,7 @@ namespace hapi_controller
             Vec3 pos = Vec3(msg->data[0], msg->data[1], msg->data[2]);
             HapticSpring *spring_effect = new HapticSpring(pos, msg->data[3]);
             hd.addEffect(spring_effect);
+	    std::cout << "received Spring pos: " << pos << " strength: " << msg->data[4] << std::endl;
         } else if(type == "RotationalSpring") {
             Vec3 axis = Vec3(msg->data[0], msg->data[1], msg->data[2]);
             HapticRotationalSpring *rotspring = new HapticRotationalSpring(axis, msg->data[3], msg->data[4]);
