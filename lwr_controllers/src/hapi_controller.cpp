@@ -6,8 +6,8 @@
 #include <utils/pseudo_inversion.h>
 #include <control_toolbox/filters.h>
 
+//HAPI stuff
 #include <HAPI/GodObjectRenderer.h>
-
 #include <HAPI/HapticPrimitive.h>
 #include <HAPI/HAPIForceEffect.h>
 #include <HAPI/HAPISurfaceObject.h>
@@ -201,7 +201,7 @@ namespace hapi_controller
 
         if(type == "Spring") {
             Vec3 pos = Vec3(msg->data[0], msg->data[1], msg->data[2]);
-            HapticSpring *spring_effect = new HapticSpring(pos, msg->data[0]);
+            HapticSpring *spring_effect = new HapticSpring(pos, msg->data[3]);
             hd.addEffect(spring_effect);
         } else if(type == "RotationalSpring") {
             Vec3 axis = Vec3(msg->data[0], msg->data[1], msg->data[2]);
@@ -245,6 +245,7 @@ namespace hapi_controller
         if(type == "Sphere"){
             primitive = new HapticPrimitive(new Collision::Sphere(pos, msg->data[0]), surface );
             hd.addShape(primitive);
+            std::cout << "received Sphere pos: " << pos << " radius: " << msg->data[0] << std::endl;
         } else if(type == "Cylinder") {
             primitive = new HapticPrimitive(new Collision::Cylinder(msg->data[0], msg->data[1]), surface );
             hd.addShape(primitive);
