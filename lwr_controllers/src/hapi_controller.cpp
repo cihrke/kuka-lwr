@@ -220,8 +220,8 @@ namespace hapi_controller
             hd.addEffect(viscosity);
         } else {
             ROS_ERROR("Wrong or no effect specified!");
+            return;
         }
-
 
         hd.transferObjects();
 
@@ -241,6 +241,7 @@ namespace hapi_controller
                                           msg->param_surface[2], msg->param_surface[3]);
         } else {
             ROS_ERROR("Wrong or no surface specified!");
+            return;
         }
 
         Vec3 pos = Vec3(msg->position[0], msg->position[1], msg->position[2]);
@@ -269,9 +270,9 @@ namespace hapi_controller
             primitive = new HapticPrimitive(new Collision::Triangle(pos, b, c), surface );
             hd.addShape(primitive);
         } else {
-            ROS_ERROR("Wrong or no primitve specified!");
+            ROS_ERROR("Wrong or no primitive specified!");
+            return;
         }
-
 
         hd.transferObjects();
 
