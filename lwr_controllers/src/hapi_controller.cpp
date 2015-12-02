@@ -65,6 +65,9 @@ namespace hapi_controller
 			//cerr << hd.getLastErrorMsg() << endl;
 			return false;
 		}
+
+        hd.setForceLimit(forceLimit);
+        hd.setTorqueLimit(torqueLimit);
 		
 		return true;
 	}
@@ -184,10 +187,7 @@ namespace hapi_controller
 				tf::wrenchKDLToMsg(tool_wrench, realtime_pub_->msg_.est_ee_wrench);
 				
 				realtime_pub_->unlockAndPublish();
-			}
-			
-			
-			
+			}		
 		}
 	}
 	
