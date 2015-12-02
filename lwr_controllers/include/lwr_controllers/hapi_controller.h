@@ -71,6 +71,10 @@ namespace hapi_controller
 
         HAPI::LwrHapticsDevice hd;
 
+        //Limits in Newton (unlimited for negative values)
+        float forceLimit = -1;
+        float torqueLimit = -1;
+
         Vec3 hapi_pos;
         Vec3 hapi_vel;
         Rotation hapi_rot;
