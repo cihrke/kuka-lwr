@@ -138,11 +138,11 @@ namespace hapi_controller
             hd.updateValues(hapi_pos, hapi_vel, hapi_rot);
 
             //get values from HAPI
-            static Vec3 force = hd.getForce();
-            static Vec3 torque = hd.getTorque();
+            hapi_force = hd.getForce();
+            hapi_torque = hd.getTorque();
 
-            (*joint_wrenches_hapi_)[kdl_chain_.getNrOfJoints()-1].force = KDL::Vector(force.x, force.y, force.z);
-            (*joint_wrenches_hapi_)[kdl_chain_.getNrOfJoints()-1].torque = KDL::Vector(torque.x, torque.y, torque.z);
+            (*joint_wrenches_hapi_)[kdl_chain_.getNrOfJoints()-1].force = KDL::Vector(hapi_force.x, hapi_force.y, hapi_force.z);
+            (*joint_wrenches_hapi_)[kdl_chain_.getNrOfJoints()-1].torque = KDL::Vector(hapi_torque.x, hapi_torque.y, hapi_torque.z);
 
             //Debug output
             std::cout << "calculated external force:   " << (float)(*joint_wrenches_)[kdl_chain_.getNrOfJoints()-1].force.x()
@@ -222,18 +222,16 @@ namespace hapi_controller
     void HapiController::effectsCallback(const lwr_controllers::Effect::ConstPtr &msg){
 
         if(msg->type == "Spring") {
-            Vec3 pos = Vec3(msg->position.x, msg->position.y, msg->position.z);
-            HapticSpring *spring_effect = new HapticSpring(pos, msg->spring_constant);
+            HapticSpring *spring_effect = new HapticSpring(Vec3(msg->position.x, msg->position.y, msg->position.z),
+                                                           msg->spring_constant);
             hd.addEffect(spring_effect);
-            std::cout << "received Spring pos: " << pos << " strength: " << msg->spring_constant << std::endl;
         } else if(msg->type == "RotationalSpring") {
-            Vec3 axis = Vec3(msg->position.x, msg->position.y, msg->position.z);
-            HapticRotationalSpring *rotspring = new HapticRotationalSpring(axis, msg->spring_constant, msg->damping);
+            HapticRotationalSpring *rotspring = new HapticRotationalSpring(Vec3(msg->position.x, msg->position.y, msg->position.z),
+                                                                           msg->spring_constant, msg->damping);
             hd.addEffect(rotspring);
         } else if(msg->type == "ForceField") {
-            Vec3 force = Vec3(msg->position.x, msg->position.y, msg->position.z);
-            Vec3 torque = Vec3(msg->torque.x, msg->torque.y, msg->torque.z);
-            HapticForceField *forcefield = new HapticForceField(force, torque);
+            HapticForceField *forcefield = new HapticForceField(Vec3(msg->position.x, msg->position.y, msg->position.z),
+                                                                Vec3(msg->torque.x, msg->torque.y, msg->torque.z));
             hd.addEffect(forcefield);
         } else if(msg->type == "Viscosity") {
             HapticViscosity *viscosity = new HapticViscosity (msg->position.x, msg->position.y, msg->position.z);
@@ -265,33 +263,35 @@ namespace hapi_controller
             primitive = new HapticPrimitive(
                         new Collision::Sphere(Vec3(msg->position.x, msg->position.y, msg->position.z),
                                               msg->radius),
-                                              surface );
+                        surface );
             hd.addShape(primitive);
-
-            std::cout << "received Sphere pos: " << Vec3(msg->position.x, msg->position.y, msg->position.z) << " radius: " << msg->radius << std::endl;
         } else if(msg->type == "Cylinder") {
-            primitive = new HapticPrimitive(new Collision::Cylinder(msg->radius, msg->length), surface);
+            primitive = new HapticPrimitive(new Collision::Cylinder(msg->radius, msg->length),
+                                            surface);
             hd.addShape(primitive);
         } else if(msg->type == "LineSegment") {
-            Vec3 end = Vec3(msg->end_position.x, msg->end_position.y, msg->end_position.z);
             primitive = new HapticPrimitive(
-                        new Collision::LineSegment(Vec3(msg->position.x, msg->position.y, msg->position.z), end), surface );
+                        new Collision::LineSegment(Vec3(msg->position.x, msg->position.y, msg->position.z),
+                                                   Vec3(msg->end_position.x, msg->end_position.y, msg->end_position.z)),
+                        surface );
             hd.addShape(primitive);
         } else if(msg->type == "Plane") {
-            Vec3 end = Vec3(msg->end_position.x, msg->end_position.y, msg->end_position.z);
             primitive = new HapticPrimitive(
-                        new Collision::Plane(Vec3(msg->position.x, msg->position.y, msg->position.z), end), surface );
+                        new Collision::Plane(Vec3(msg->position.x, msg->position.y, msg->position.z),
+                                             Vec3(msg->end_position.x, msg->end_position.y, msg->end_position.z)),
+                        surface );
             hd.addShape(primitive);
         } else if(msg->type == "Point"){
             primitive = new HapticPrimitive(
-                        new Collision::Point(Vec3(msg->position.x, msg->position.y, msg->position.z)), surface );
+                        new Collision::Point(Vec3(msg->position.x, msg->position.y, msg->position.z)),
+                        surface );
             hd.addShape(primitive);
         } else if(msg->type == "Triangle"){
             primitive = new HapticPrimitive(
                         new Collision::Triangle(Vec3(msg->position.x, msg->position.y, msg->position.z),
                                                 Vec3(msg->end_position.x, msg->end_position.y, msg->end_position.z),
                                                 Vec3(msg->third_vertex.x, msg->third_vertex.y, msg->third_vertex.z)),
-                                                surface );
+                        surface );
             hd.addShape(primitive);
         } else {
             ROS_ERROR("Wrong or no primitive specified!");

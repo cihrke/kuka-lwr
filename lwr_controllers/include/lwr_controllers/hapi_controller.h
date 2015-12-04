@@ -79,6 +79,9 @@ namespace hapi_controller
         Vec3 hapi_pos;
         Vec3 hapi_vel;
         Rotation hapi_rot;
+
+        Vec3 hapi_force;
+        Vec3 hapi_torque;
     };
 }
 
