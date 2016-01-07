@@ -12,7 +12,6 @@
 #include <boost/scoped_ptr.hpp>
 #include <kdl/chainfksolvervel_recursive.hpp>
 
-#include <HAPI/AnyHapticsDevice.h>
 #include <HAPI/LwrHapticsDevice.h>
 #include <H3DUtil/H3DUtil.h>
 
@@ -79,9 +78,6 @@ namespace hapi_controller
         Vec3 hapi_pos;
         Vec3 hapi_vel;
         Rotation hapi_rot;
-
-        Vec3 hapi_force;
-        Vec3 hapi_torque;
     };
 }
 

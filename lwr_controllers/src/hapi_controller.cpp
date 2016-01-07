@@ -6,14 +6,14 @@
 #include <utils/pseudo_inversion.h>
 #include <control_toolbox/filters.h>
 
-//HAPI stuff
+// HAPI stuff
 #include <HAPI/GodObjectRenderer.h>
 #include <HAPI/HapticPrimitive.h>
-#include <HAPI/HAPIForceEffect.h>
 #include <HAPI/HAPISurfaceObject.h>
 #include <HAPI/FrictionSurface.h>
 
-//effects
+// HAPI effects
+#include <HAPI/HAPIForceEffect.h>
 #include <HAPI/HapticSpring.h>
 #include <HAPI/HapticForceField.h>
 #include <HAPI/HapticRotationalSpring.h>
@@ -63,10 +63,11 @@ namespace hapi_controller
         joint_effort_est_.reset(new KDL::JntArray(kdl_chain_.getNrOfJoints()));
 
         if( hd.initDevice() != HAPIHapticsDevice::SUCCESS ) {
-            //cerr << hd.getLastErrorMsg() << endl;
+            ROS_ERROR("Hapi Device Initialization failed");
             return false;
         }
 
+        //get limits from robot model?
         hd.setForceLimit(forceLimit);
         hd.setTorqueLimit(torqueLimit);
 
@@ -82,6 +83,7 @@ namespace hapi_controller
             (*joint_acceleration_)(i) = 0;
         }
 
+        //test other renderes!
         hd.setHapticsRenderer(new GodObjectRenderer);
         //set stylus for visual representation
 
@@ -134,29 +136,42 @@ namespace hapi_controller
             hapi_rot = Rotation(Vec3((float)p_.M.GetRot()[0], (float)p_.M.GetRot()[1],
                                      (float)p_.M.GetRot()[2]),(float)p_.M.GetRot().Norm());
 
-            //send data to hapi
+            // Send data to update hapi
             hd.updateValues(hapi_pos, hapi_vel, hapi_rot);
 
-            //get values from HAPI
-            hapi_force = hd.getForce();
-            hapi_torque = hd.getTorque();
+            // Get values from hapi
+            (*joint_wrenches_hapi_)[kdl_chain_.getNrOfJoints()-1].force = KDL::Vector(hd.getForce().x,
+                                                                                      hd.getForce().y,
+                                                                                      hd.getForce().z);
+            (*joint_wrenches_hapi_)[kdl_chain_.getNrOfJoints()-1].torque = KDL::Vector(hd.getTorque().x,
+                                                                                       hd.getTorque().y,
+                                                                                       hd.getTorque().z);
 
-            (*joint_wrenches_hapi_)[kdl_chain_.getNrOfJoints()-1].force = KDL::Vector(hapi_force.x, hapi_force.y, hapi_force.z);
-            (*joint_wrenches_hapi_)[kdl_chain_.getNrOfJoints()-1].torque = KDL::Vector(hapi_torque.x, hapi_torque.y, hapi_torque.z);
-
-            //Debug output
+            // Debug output
             std::cout << "calculated external force:   " << (float)(*joint_wrenches_)[kdl_chain_.getNrOfJoints()-1].force.x()
-                      << (float)(*joint_wrenches_)[kdl_chain_.getNrOfJoints()-1].force.y()
-                      << (float)(*joint_wrenches_)[kdl_chain_.getNrOfJoints()-1].force.z() << std::endl;
-            std::cout << "calculated external torque:  " << (float)(*joint_wrenches_)[kdl_chain_.getNrOfJoints()-1].torque.x()
-                      << (float)(*joint_wrenches_)[kdl_chain_.getNrOfJoints()-1].torque.y()
-                      << (float)(*joint_wrenches_)[kdl_chain_.getNrOfJoints()-1].torque.z() << std::endl;
+                      << " " << (float)(*joint_wrenches_)[kdl_chain_.getNrOfJoints()-1].force.y()
+                      << " " << (float)(*joint_wrenches_)[kdl_chain_.getNrOfJoints()-1].force.z() << std::endl;
             std::cout << "calculated force from hapi:  " << (float)(*joint_wrenches_hapi_)[kdl_chain_.getNrOfJoints()-1].force.x()
-                      << (float)(*joint_wrenches_hapi_)[kdl_chain_.getNrOfJoints()-1].force.y()
-                      << (float)(*joint_wrenches_hapi_)[kdl_chain_.getNrOfJoints()-1].force.z() << std::endl;
+                      << " " << (float)(*joint_wrenches_hapi_)[kdl_chain_.getNrOfJoints()-1].force.y()
+                      << " " << (float)(*joint_wrenches_hapi_)[kdl_chain_.getNrOfJoints()-1].force.z() << std::endl;
+            std::cout << "force difference: " << (float)(*joint_wrenches_)[kdl_chain_.getNrOfJoints()-1].force.x() -
+                         (float)(*joint_wrenches_hapi_)[kdl_chain_.getNrOfJoints()-1].force.x()
+                      << " " << (float)(*joint_wrenches_)[kdl_chain_.getNrOfJoints()-1].force.y() -
+                         (float)(*joint_wrenches_hapi_)[kdl_chain_.getNrOfJoints()-1].force.y()
+                      << " " << (float)(*joint_wrenches_)[kdl_chain_.getNrOfJoints()-1].force.z() -
+                         (float)(*joint_wrenches_hapi_)[kdl_chain_.getNrOfJoints()-1].force.z() << std::endl;
+            std::cout << "calculated external torque:  " << (float)(*joint_wrenches_)[kdl_chain_.getNrOfJoints()-1].torque.x()
+                      << " " << (float)(*joint_wrenches_)[kdl_chain_.getNrOfJoints()-1].torque.y()
+                      << " " << (float)(*joint_wrenches_)[kdl_chain_.getNrOfJoints()-1].torque.z() << std::endl;
             std::cout << "calculated torque from hapi: " << (float)(*joint_wrenches_hapi_)[kdl_chain_.getNrOfJoints()-1].torque.x()
-                      << (float)(*joint_wrenches_hapi_)[kdl_chain_.getNrOfJoints()-1].torque.y()
-                      << (float)(*joint_wrenches_hapi_)[kdl_chain_.getNrOfJoints()-1].torque.z() << std::endl;
+                      << " " << (float)(*joint_wrenches_hapi_)[kdl_chain_.getNrOfJoints()-1].torque.y()
+                      << " " << (float)(*joint_wrenches_hapi_)[kdl_chain_.getNrOfJoints()-1].torque.z() << std::endl;
+            std::cout << "torque difference: " << (float)(*joint_wrenches_)[kdl_chain_.getNrOfJoints()-1].torque.x() -
+                         (float)(*joint_wrenches_hapi_)[kdl_chain_.getNrOfJoints()-1].torque.x()
+                      << " " << (float)(*joint_wrenches_)[kdl_chain_.getNrOfJoints()-1].torque.y() -
+                         (float)(*joint_wrenches_hapi_)[kdl_chain_.getNrOfJoints()-1].torque.y()
+                      << " " << (float)(*joint_wrenches_)[kdl_chain_.getNrOfJoints()-1].torque.z() -
+                         (float)(*joint_wrenches_hapi_)[kdl_chain_.getNrOfJoints()-1].torque.z() << std::endl;
 
             // Compute Dynamics with hapi force feedback
             ret = id_solver_->CartToJnt(*joint_position_,
@@ -171,10 +186,12 @@ namespace hapi_controller
                 return;
             }
 
+            // Send joint effort to robot
             for(size_t i=0; i<joint_handles_.size(); i++) {
                 joint_handles_[i].setCommand((*joint_effort_est_)(i));
             }
 
+            // Publish joints
             if (true && realtime_pub_->trylock()) {
                 realtime_pub_->msg_.header.stamp = time;
                 for (unsigned i=0; i<joint_handles_.size(); i++) {
@@ -267,7 +284,7 @@ namespace hapi_controller
             hd.addShape(primitive);
         } else if(msg->type == "Cylinder") {
             primitive = new HapticPrimitive(new Collision::Cylinder(msg->radius, msg->length),
-                                            surface);
+                        surface);
             hd.addShape(primitive);
         } else if(msg->type == "LineSegment") {
             primitive = new HapticPrimitive(
