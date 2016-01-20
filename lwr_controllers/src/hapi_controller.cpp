@@ -147,7 +147,7 @@ namespace hapi_controller
             (*joint_wrenches_hapi_)[kdl_chain_.getNrOfJoints()-1].torque = KDL::Vector(hd.getTorque().x,
                                                                                        hd.getTorque().y,
                                                                                        hd.getTorque().z);
-
+	    {
             // Debug output
 	    std::cout << "-----------------------------------------------------------" << std::endl;
             std::cout << "external force:   " << (float)(*joint_wrenches_)[kdl_chain_.getNrOfJoints()-1].force.x()
@@ -174,6 +174,7 @@ namespace hapi_controller
                          (float)(*joint_wrenches_hapi_)[kdl_chain_.getNrOfJoints()-1].torque.y()
                       << " " << (float)(*joint_wrenches_)[kdl_chain_.getNrOfJoints()-1].torque.z() -
                          (float)(*joint_wrenches_hapi_)[kdl_chain_.getNrOfJoints()-1].torque.z() << std::endl;
+	    }
 
             // Compute Dynamics with hapi force feedback
             ret = id_solver_->CartToJnt(*joint_position_,
@@ -196,12 +197,14 @@ namespace hapi_controller
 		std::cout << "default joint effort:    " << (float)(*joint_effort_est_)(i) << std::endl;
 		std::cout << "calculated joint effort: " << (float)(*joint_effort_est_hapi_)(i) << std::endl;
             }
+            
+            *joint_effort_est_ = *joint_effort_est_hapi_;
 
             // Publish joints
             if (true && realtime_pub_->trylock()) {
                 realtime_pub_->msg_.header.stamp = time;
                 for (unsigned i=0; i<joint_handles_.size(); i++) {
-                    realtime_pub_->msg_.est_ext_torques[i] = (*joint_effort_est_hapi_)(i);
+                    realtime_pub_->msg_.est_ext_torques[i] = (*joint_effort_est_)(i);
                 }
 
                 // Compute cartesian wrench on end effector
