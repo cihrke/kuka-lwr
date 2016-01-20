@@ -260,6 +260,8 @@ void HapiController::effectsCallback(const lwr_controllers::Effect::ConstPtr &ms
     } else if(msg->type == "Viscosity") {
         HapticViscosity *viscosity = new HapticViscosity (msg->position.x, msg->position.y, msg->position.z);
         hd.addEffect(viscosity);
+	} else if(msg->type == "Clear") {
+		hd.clearEffects();
     } else {
         ROS_ERROR("Wrong or no effect specified!");
         return;
@@ -278,6 +280,9 @@ void HapiController::primitivesCallback(const lwr_controllers::Primitive::ConstP
     if(msg->surface == "FrictionSurface") {
         surface = new FrictionSurface(msg->surface_parameters[0], msg->surface_parameters[1],
                                       msg->surface_parameters[2], msg->surface_parameters[3]);
+	} else if(msg->type == "Clear") {
+		hd.clearShapes();
+		return;
     } else {
         ROS_ERROR("Wrong or no surface specified!");
         return;
