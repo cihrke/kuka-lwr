@@ -61,6 +61,7 @@ namespace hapi_controller
         joint_wrenches_.reset(new KDL::Wrenches(kdl_chain_.getNrOfJoints()));
         joint_wrenches_hapi_.reset(new KDL::Wrenches(kdl_chain_.getNrOfJoints()));
         joint_effort_est_.reset(new KDL::JntArray(kdl_chain_.getNrOfJoints()));
+	joint_effort_est_hapi_.reset(new KDL::JntArray(kdl_chain_.getNrOfJoints()));
 
         if( hd.initDevice() != HAPIHapticsDevice::SUCCESS ) {
             ROS_ERROR("Hapi Device Initialization failed");
@@ -148,10 +149,11 @@ namespace hapi_controller
                                                                                        hd.getTorque().z);
 
             // Debug output
-            std::cout << "calculated external force:   " << (float)(*joint_wrenches_)[kdl_chain_.getNrOfJoints()-1].force.x()
+	    std::cout << "-----------------------------------------------------------" << std::endl;
+            std::cout << "external force:   " << (float)(*joint_wrenches_)[kdl_chain_.getNrOfJoints()-1].force.x()
                       << " " << (float)(*joint_wrenches_)[kdl_chain_.getNrOfJoints()-1].force.y()
                       << " " << (float)(*joint_wrenches_)[kdl_chain_.getNrOfJoints()-1].force.z() << std::endl;
-            std::cout << "calculated force from hapi:  " << (float)(*joint_wrenches_hapi_)[kdl_chain_.getNrOfJoints()-1].force.x()
+            std::cout << "force from hapi:  " << (float)(*joint_wrenches_hapi_)[kdl_chain_.getNrOfJoints()-1].force.x()
                       << " " << (float)(*joint_wrenches_hapi_)[kdl_chain_.getNrOfJoints()-1].force.y()
                       << " " << (float)(*joint_wrenches_hapi_)[kdl_chain_.getNrOfJoints()-1].force.z() << std::endl;
             std::cout << "force difference: " << (float)(*joint_wrenches_)[kdl_chain_.getNrOfJoints()-1].force.x() -
@@ -160,10 +162,10 @@ namespace hapi_controller
                          (float)(*joint_wrenches_hapi_)[kdl_chain_.getNrOfJoints()-1].force.y()
                       << " " << (float)(*joint_wrenches_)[kdl_chain_.getNrOfJoints()-1].force.z() -
                          (float)(*joint_wrenches_hapi_)[kdl_chain_.getNrOfJoints()-1].force.z() << std::endl;
-            std::cout << "calculated external torque:  " << (float)(*joint_wrenches_)[kdl_chain_.getNrOfJoints()-1].torque.x()
+            std::cout << "external torque:  " << (float)(*joint_wrenches_)[kdl_chain_.getNrOfJoints()-1].torque.x()
                       << " " << (float)(*joint_wrenches_)[kdl_chain_.getNrOfJoints()-1].torque.y()
                       << " " << (float)(*joint_wrenches_)[kdl_chain_.getNrOfJoints()-1].torque.z() << std::endl;
-            std::cout << "calculated torque from hapi: " << (float)(*joint_wrenches_hapi_)[kdl_chain_.getNrOfJoints()-1].torque.x()
+            std::cout << "torque from hapi: " << (float)(*joint_wrenches_hapi_)[kdl_chain_.getNrOfJoints()-1].torque.x()
                       << " " << (float)(*joint_wrenches_hapi_)[kdl_chain_.getNrOfJoints()-1].torque.y()
                       << " " << (float)(*joint_wrenches_hapi_)[kdl_chain_.getNrOfJoints()-1].torque.z() << std::endl;
             std::cout << "torque difference: " << (float)(*joint_wrenches_)[kdl_chain_.getNrOfJoints()-1].torque.x() -
@@ -178,24 +180,28 @@ namespace hapi_controller
                                         *joint_velocity_,
                                         *joint_acceleration_,
                                         *joint_wrenches_hapi_,
-                                        *joint_effort_est_);
-
+                                        *joint_effort_est_hapi_);
+	    
             if (ret < 0) {
                 ROS_ERROR("KDL: inverse dynamics ERROR");
                 realtime_pub_->unlock();
                 return;
             }
+            
+            
 
             // Send joint effort to robot
             for(size_t i=0; i<joint_handles_.size(); i++) {
-                joint_handles_[i].setCommand((*joint_effort_est_)(i));
+                joint_handles_[i].setCommand((*joint_effort_est_hapi_)(i));
+		std::cout << "default joint effort:    " << (float)(*joint_effort_est_)(i) << std::endl;
+		std::cout << "calculated joint effort: " << (float)(*joint_effort_est_hapi_)(i) << std::endl;
             }
 
             // Publish joints
             if (true && realtime_pub_->trylock()) {
                 realtime_pub_->msg_.header.stamp = time;
                 for (unsigned i=0; i<joint_handles_.size(); i++) {
-                    realtime_pub_->msg_.est_ext_torques[i] = (*joint_effort_est_)(i);
+                    realtime_pub_->msg_.est_ext_torques[i] = (*joint_effort_est_hapi_)(i);
                 }
 
                 // Compute cartesian wrench on end effector
