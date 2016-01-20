@@ -55,7 +55,7 @@ if __name__ == '__main__':
     
     try:
         ne = H3DPublisher()
-        ne.publish_primitive('Sphere', 'FrictionSurface', Vector3(-0.25, 0.25, 0), [0, 0, 0, 0], radius=0.02)
-        ne.publish_effect('Spring', Vector3(0, 0.5, 0), spring_constant=0.25)
+        ne.publish_primitive('Sphere', 'FrictionSurface', Vector3(0, 0.5, 0), [0, 0, 0, 0], radius=0.02)
+        ne.publish_effect('Spring', Vector3(0, 0.5, 0), spring_constant=1.5)
     except rospy.ROSInterruptException:
         pass

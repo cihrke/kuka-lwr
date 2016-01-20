@@ -34,9 +34,6 @@ namespace hapi_controller
         void starting(const ros::Time& time);
         void update(const ros::Time& time, const ros::Duration& period);
         void stopping(const ros::Time& time);
-        Vec3 getPos();
-        Vec3 getVel();
-        Rotation getRot();
 
     private:
 
@@ -53,7 +50,7 @@ namespace hapi_controller
         boost::scoped_ptr<KDL::JntArray> joint_acceleration_;
         boost::scoped_ptr<KDL::Wrenches> joint_wrenches_;
         boost::scoped_ptr<KDL::JntArray> joint_effort_est_;
-	boost::scoped_ptr<KDL::JntArray> joint_effort_est_hapi_;
+		boost::scoped_ptr<KDL::JntArray> joint_effort_est_hapi_;
         boost::scoped_ptr<KDL::Wrenches> joint_wrenches_hapi_;
 
         ros::Time last_publish_time_;
