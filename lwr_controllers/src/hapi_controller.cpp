@@ -114,9 +114,6 @@ void HapiController::update(const ros::Time& time, const ros::Duration& period)
             joint_msr_states_.qdot(i) = joint_handles_[i].getVelocity();
         }
 
-        fk_solver_pos_->JntToCart(joint_msr_states_.q, p_);
-        fk_solver_vel_->JntToCart(joint_velocity, v_);
-
         // Compute Dynamics without hapi
         int ret = id_solver_->CartToJnt(*joint_position_,
                                         *joint_velocity_,
@@ -129,7 +126,10 @@ void HapiController::update(const ros::Time& time, const ros::Duration& period)
             return;
         }
 
-        //update values for HAPI
+        // Update HAPI values
+        fk_solver_pos_->JntToCart(joint_msr_states_.q, p_);
+        fk_solver_vel_->JntToCart(joint_velocity, v_);
+
         hapi_pos = Vec3((float)p_.p(0), (float)p_.p(1), (float)p_.p(2));
         hapi_vel = Vec3((float)v_.p.v(0), (float)v_.p.v(1), (float)v_.p.v(2));  // TODO: maybe v_.p.p?
 
@@ -137,20 +137,21 @@ void HapiController::update(const ros::Time& time, const ros::Duration& period)
         hapi_rot = Rotation(Vec3((float)p_.M.GetRot()[0], (float)p_.M.GetRot()[1],
                                  (float)p_.M.GetRot()[2]),(float)p_.M.GetRot().Norm());
 
-        // Send data to update hapi
+        // Update HAPI
         hd.updateValues(hapi_pos, hapi_vel, hapi_rot);
-		
-		*joint_wrenches_hapi_ = *joint_wrenches_;
 
-        // Get values from hapi
+        *joint_wrenches_hapi_ = *joint_wrenches_;
+
+        // Get values from HAPI
         (*joint_wrenches_hapi_)[kdl_chain_.getNrOfJoints()-1].force += KDL::Vector(hd.getForce().x,
                 hd.getForce().y,
                 hd.getForce().z);
         (*joint_wrenches_hapi_)[kdl_chain_.getNrOfJoints()-1].torque += KDL::Vector(hd.getTorque().x,
                 hd.getTorque().y,
                 hd.getTorque().z);
+
+        // Debug output
         {
-            // Debug output
             std::cout << "-----------------------------------------------------------" << std::endl;
             std::cout << "external force:   " << (float)(*joint_wrenches_)[kdl_chain_.getNrOfJoints()-1].force.x()
                       << " " << (float)(*joint_wrenches_)[kdl_chain_.getNrOfJoints()-1].force.y()
@@ -178,7 +179,7 @@ void HapiController::update(const ros::Time& time, const ros::Duration& period)
                       (float)(*joint_wrenches_hapi_)[kdl_chain_.getNrOfJoints()-1].torque.z() << std::endl;
         }
 
-        // Compute Dynamics with hapi force feedback
+        // Compute Dynamics with HAPI force feedback
         ret = id_solver_->CartToJnt(*joint_position_,
                                     *joint_velocity_,
                                     *joint_acceleration_,
@@ -193,7 +194,8 @@ void HapiController::update(const ros::Time& time, const ros::Duration& period)
 
         // Send joint effort
         for(size_t i=0; i<joint_handles_.size(); i++) {
-            joint_handles_[i].setCommand((*joint_effort_est_hapi_)(i));
+            // k*(q_des-q_msr) = 0, D=0.7, dynamic model f ?
+            joint_handles_[i].setCommand(0.7*(*joint_velocity)(i) + (*joint_effort_est_hapi_)(i));
             std::cout << "default joint effort:    " << (float)(*joint_effort_est_)(i) << std::endl;
             std::cout << "calculated joint effort: " << (float)(*joint_effort_est_hapi_)(i) << std::endl;
         }
@@ -260,8 +262,8 @@ void HapiController::effectsCallback(const lwr_controllers::Effect::ConstPtr &ms
     } else if(msg->type == "Viscosity") {
         HapticViscosity *viscosity = new HapticViscosity (msg->position.x, msg->position.y, msg->position.z);
         hd.addEffect(viscosity);
-	} else if(msg->type == "Clear") {
-		hd.clearEffects();
+    } else if(msg->type == "Clear") {
+        hd.clearEffects();
     } else {
         ROS_ERROR("Wrong or no effect specified!");
         return;
@@ -280,9 +282,9 @@ void HapiController::primitivesCallback(const lwr_controllers::Primitive::ConstP
     if(msg->surface == "FrictionSurface") {
         surface = new FrictionSurface(msg->surface_parameters[0], msg->surface_parameters[1],
                                       msg->surface_parameters[2], msg->surface_parameters[3]);
-	} else if(msg->type == "Clear") {
-		hd.clearShapes();
-		return;
+    } else if(msg->type == "Clear") {
+        hd.clearShapes();
+        return;
     } else {
         ROS_ERROR("Wrong or no surface specified!");
         return;
