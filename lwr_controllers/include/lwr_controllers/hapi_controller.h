@@ -52,6 +52,10 @@ namespace hapi_controller
         boost::scoped_ptr<KDL::JntArray> joint_effort_est_;
 		boost::scoped_ptr<KDL::JntArray> joint_effort_est_hapi_;
         boost::scoped_ptr<KDL::Wrenches> joint_wrenches_hapi_;
+		boost::scoped_ptr<KDL::JntArray> D_;
+		boost::scoped_ptr<KDL::JntArray> K_;
+		boost::scoped_ptr<KDL::JntArray> tau_gravity_;
+		boost::scoped_ptr<KDL::ChainDynParam> id_solver_gravity_;
 
         ros::Time last_publish_time_;
         double publish_rate_;

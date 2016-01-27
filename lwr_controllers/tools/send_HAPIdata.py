@@ -59,6 +59,6 @@ if __name__ == '__main__':
         ne.publish_effect('Clear', Vector3(0, 0.5, 0), spring_constant=1.5)
         rospy.sleep(1)
         ne.publish_primitive('Sphere', 'FrictionSurface', Vector3(0, 0.5, 0), [0, 0, 0, 0], radius=0.02)
-        ne.publish_effect('Spring', Vector3(0, 0.5, 0), spring_constant=1.5)
+        ne.publish_effect('Spring', Vector3(0, 0.5, 0), spring_constant=5.5)
     except rospy.ROSInterruptException:
         pass

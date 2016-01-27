@@ -62,6 +62,10 @@ bool HapiController::init(hardware_interface::EffortJointInterface *robot, ros::
     joint_wrenches_hapi_.reset(new KDL::Wrenches(kdl_chain_.getNrOfJoints()));
     joint_effort_est_.reset(new KDL::JntArray(kdl_chain_.getNrOfJoints()));
     joint_effort_est_hapi_.reset(new KDL::JntArray(kdl_chain_.getNrOfJoints()));
+	D_.reset(new KDL::JntArray(kdl_chain_.getNrOfJoints()));
+	K_.reset(new KDL::JntArray(kdl_chain_.getNrOfJoints()));
+	tau_gravity_.reset(new KDL::JntArray(kdl_chain_.getNrOfJoints()));
+	id_solver_gravity_.reset(new KDL::ChainDynParam(kdl_chain_, *gravity_));
 
     if( hd.initDevice() != HAPIHapticsDevice::SUCCESS ) {
         ROS_ERROR("Hapi Device Initialization failed");
@@ -80,8 +84,10 @@ void HapiController::starting(const ros::Time& time)
     last_publish_time_ = time;
     for (unsigned i = 0; i < joint_handles_.size(); i++) {
         (*joint_position_)(i) = joint_handles_[i].getPosition();
-        (*joint_velocity_)(i) = 0; //joint_handles_[i].getVelocity();
+        (*joint_velocity_)(i) = joint_handles_[i].getVelocity();
         (*joint_acceleration_)(i) = 0;
+		(*D_)(i) = 0.7;
+		(*K_)(i) = 300.0;
     }
 
     //test other renderes!
@@ -191,13 +197,16 @@ void HapiController::update(const ros::Time& time, const ros::Duration& period)
             realtime_pub_->unlock();
             return;
         }
+        
+        
+        id_solver_gravity_->JntToGravity( joint_msr_states_.qdot , *tau_gravity_ );
 
         // Send joint effort
         for(size_t i=0; i<joint_handles_.size(); i++) {
-            // k*(q_des-q_msr) = 0, D=0.7, dynamic model f ?
-            joint_handles_[i].setCommand(0.7*(*joint_velocity)(i) + (*joint_effort_est_hapi_)(i));
-            std::cout << "default joint effort:    " << (float)(*joint_effort_est_)(i) << std::endl;
+			std::cout << "default joint effort:    " << (float)(*joint_effort_est_)(i) << std::endl;
             std::cout << "calculated joint effort: " << (float)(*joint_effort_est_hapi_)(i) << std::endl;
+            // k*(q_des-q_msr) = 0, D=0.7, dynamic model f ?
+            joint_handles_[i].setCommand((*K_)(i)*(joint_handles_[i].getPosition() - joint_msr_states_.q(i)) + (*D_)(i)*joint_msr_states_.qdot(i) + (*joint_effort_est_hapi_)(i) + (*tau_gravity_)(i));  
         }
 
         // Publish joints
